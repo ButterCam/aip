@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US" class="glue-flexbox">
   <head>
-    <title>AIP-2715: Documenting authorization changes</title>
+    <title>AIP-4116: Identity Tokens</title>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
@@ -190,39 +190,45 @@
     </li>
     <li class="nav-item nav-item-header">AIPs</li>
     <li class="nav-item">
-      <a href="/2712">
-        <span class="aip-number">2712</span>
-        API completeness
+      <a href="/4110">
+        <span class="aip-number">4110</span>
+        Application Default Credentials
       </a>
     </li>
     <li class="nav-item">
-      <a href="/2713">
-        <span class="aip-number">2713</span>
-        One team owns each type
+      <a href="/4111">
+        <span class="aip-number">4111</span>
+        Self-signed JWT
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/4112">
+        <span class="aip-number">4112</span>
+        Service Account Keys
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/4113">
+        <span class="aip-number">4113</span>
+        gcloud CLI Integration
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/4114">
+        <span class="aip-number">4114</span>
+        Device Certificate Authentication via Mutual TLS
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="/4115">
+        <span class="aip-number">4115</span>
+        Default Credentials From Google Virtual Machines
       </a>
     </li>
     <li class="nav-item nav-item-active">
-      <a href="/2715">
-        <span class="aip-number">2715</span>
-        Documenting authorization changes
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/2716">
-        <span class="aip-number">2716</span>
-        Standard terms in names
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/2717">
-        <span class="aip-number">2717</span>
-        Patterns for generic fields
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="/2718">
-        <span class="aip-number">2718</span>
-        References to objects in other APIs
+      <a href="/4116">
+        <span class="aip-number">4116</span>
+        Identity Tokens
       </a>
     </li>
     </ul>
@@ -231,19 +237,23 @@
           
 <aside id="aip-sidebar" class="docs-component-sidebar">
   <table id="aip-summary">
-    <tr><th colspan="2">Documenting authorization changes</th></tr>
-    <tr><td>Number</td><td>2715</td></tr>
-    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/apps/2715">aip.bybutter.com/apps/2715</a></td></tr>
-    <tr><td>Scope</td><td>GSuite</td></tr>
-    <tr><td>State</td><td>Reviewing</td></tr>
-    <tr><td>Created</td><td>2018-09-10</td></tr>
-    <tr><td>Updated</td><td>2018-09-10</td></tr>
+    <tr><th colspan="2">Identity Tokens</th></tr>
+    <tr><td>Number</td><td>4116</td></tr>
+    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/auth/4116">aip.bybutter.com/auth/4116</a></td></tr>
+    <tr><td>Scope</td><td>Auth</td></tr>
+    <tr><td>State</td><td>Draft</td></tr>
+    <tr><td>Created</td><td>2021-01-06</td></tr>
+    <tr><td>Updated</td><td>2021-01-06</td></tr>
   </table>
 
   <section id="aip-toc" class="docs-component-sidebar-toc">
     <div class="toc"><span class="toctitle">Contents</span><ul>
-<li><a href="#definitions">Definitions</a></li>
-<li><a href="#guidance">Guidance</a></li>
+<li><a href="#guidance">Guidance</a><ul>
+<li><a href="#id-tokens-obtained-by-application-default-credentials">ID tokens obtained by Application Default Credentials</a></li>
+<li><a href="#expected-behavior-for-fetching-id-tokens">Expected Behavior for Fetching ID Tokens</a></li>
+<li><a href="#expected-behavior-for-verifying-id-tokens">Expected Behavior for Verifying ID Tokens</a></li>
+</ul>
+</li>
 </ul>
 </div>
 
@@ -252,8 +262,8 @@
   <section class="docs-component-sidebar-actions">
     <ul>
       <li><a href="https://github.com/ButterCam/aip/issues/">File Bug</a></li>
-      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/apps/2715.md">View source</a></li>
-      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/apps/2715.md">Edit this page</a></li>
+      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/auth/4116.md">View source</a></li>
+      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/auth/4116.md">Edit this page</a></li>
     </ul>
   </section>
 </aside>
@@ -271,75 +281,67 @@
       </li>
       
       <li class="glue-breadcrumbs__item" aria-level="2">
-        <a class="glue-breadcrumbs__link" href="/apps">
-          GSuite AIPs
+        <a class="glue-breadcrumbs__link" href="/auth">
+          Auth AIPs
         </a>
       </li>
       
       <li class="glue-breadcrumbs__item glue-breadcrumbs__item--active"
           aria-level="3">
-        Documenting authorization changes
+        Identity Tokens
       </li>
     </ol>
   </nav>
 </section>
-  <p id="aip-state-banner" class="callout note">
-  This AIP is currently under review. This means that the editors have read it
-  and are in high-level concurrence, and while it is not yet fully approved, we
-  have a good faith expectation that the AIP will be approved in something
-  close to its current state.
+  <p id="aip-state-banner" class="callout warning">
+  This AIP is currently a draft. This means that it is being actively debated
+  and discussed, and it may change in non-trivial ways.
 </p>
-  <h4 class="aip-number">AIP-2715</h4>
-  <h1>Documenting authorization changes</h1>
-<p>Authorization is critical to manage well. Understanding an API includes
-understanding not only what operations do, but when one is allowed to do them.
-Authorization changes, either new authorization constructs or new uses of
-existing authorization constructs, should be easy to find in a design rather
-than scattered through the document in individual sections.</p>
-<p>In order to make it easy to see what (if any) authorization constructs are
-being modified in your design, we want to be able to find them in a single,
-clear place.</p>
-<p><strong>Note:</strong> This is <em>not</em> talking about RPC-level permissions, like those covered
-by <code>RpcSecurityPolicy</code>, but about authorization constructs used by your API for
-its own purposes.</p>
-<h2 id="definitions">Definitions</h2>
-<p>There are a couple of common types of authorization construct:</p>
-<p>A <strong>role</strong> refers to an authorization construct which is granted to an
-<em>identity</em> or an <em>identity group</em> on a <em>resource</em>. The most well known examples
-of roles in G Suite are the <code>commenter</code>, <code>reader</code>, <code>writer</code>, and <code>owner</code> roles
-from Drive.</p>
-<p>A <strong>permission</strong> refers to an authorization construct which is used to check
-whether a particular <em>identity</em> can execute some <em>operation</em>. For example, to
-check whether the current user can delete a file, the application may check
-whether the user has the <code>file.delete</code> permission on the file. Permissions are
-most often assigned to roles, so that only roles are granted to identities or
-identity groups, but some systems allow permissions to be granted directly.
-Applications often only use each permission to authorize a single operation on
-a resource, but there are cases where an application may use a permission to
-authorize multiple different operations.</p>
-<p>Within an application, authorization checks are made using only one of these
-authorization constructs (typically permissions, if the application has that
-concept). For example, in order to determine if a user can read a document, an
-application would <em>either</em> check whether the user has a <code>doc.read</code> permission
-<em>or</em> has the <code>reader</code> role, but not both.</p>
-<h2 id="guidance">Guidance</h2>
-<p>If your design creates new authorization constructs or extends/modifies the use
-of any existing authorization constructs, you <strong>must</strong> have a separate section
-in your design document that describes this. You <strong>may</strong> additionally discuss
-these in any other place in your document.</p>
-<p>It is not important whether this is a top-level section or subsection. It is
-important that all such changes are listed together in a distinct section so
-they are easy to find and analyze.</p>
-<p>If the identifier of an authorization construct that is new or modified is
-visible to users or developers, the way that it is identified should also be in
-your document. Examples of this are:</p>
+  <h4 class="aip-number">AIP-4116</h4>
+  <h1>Identity Tokens</h1>
+<p>Identity Tokens (or ID Tokens) are JSON Web Tokens (JWT) with additional claims pertaining to the identity of the client or end-user (such as "email").  Which additional claims fields are included in the ID token are dependent on the ID
+token provider.</p>
+<p>The <strong>fetching</strong> of ID tokens is used to:</p>
 <ul>
-<li>If access is granted using roles and a new role is being added, the way that
-  the role is identified in the role granting RPCs should be in your document.</li>
-<li>If there is an API that allows permissions assigned to roles to be
-  manipulated, the way that the permission is identified in the role
-  manipulation RPCs should be in your document.</li>
+<li>request a <a href="https://cloud.google.com/run/docs/authenticating/service-to-service">protected Cloud Run service</a>, which requires a valid ID token in the <code>Authentication</code> header.</li>
+<li>request an <a href="https://cloud.google.com/iap/docs/signed-headers-howto#securing_iap_headers">IAP-protected resource</a>, which requires a valid ID token in the <code>Authentication</code> header.</li>
 </ul>
+<p>The <strong>validation</strong> of ID tokens should be done by:</p>
+<ul>
+<li>services receiving an <a href="https://cloud.google.com/pubsub/docs/push#setting_up_for_push_authentication">authenticated PubSub push message</a> sent outside of Google Cloud.</li>
+</ul>
+<p><strong>Note:</strong> Because this AIP describes guidance and requirements in a
+language-neutral way, it uses generic terminology which may be imprecise or
+inappropriate in certain languages or environments.</p>
+<h2 id="guidance">Guidance</h2>
+<p>This section describes the general guidance of ID tokens as a means of
+authentication.</p>
+<h3 id="id-tokens-obtained-by-application-default-credentials">ID tokens obtained by Application Default Credentials</h3>
+<p>When a target audience is provided by the developer, <a href="https://google.aip.dev/auth/4110">ADC</a> <strong>should</strong> fetch
+an ID token with the credentials provided. For example, if service account keys
+are provided, ADC will request an ID token from the OAuth token endpoint. If
+<a href="https://google.aip.dev/auth/4115">virtual machine credentials</a> are provided, ADC will request an ID token from
+the virtual machine server.</p>
+<h3 id="expected-behavior-for-fetching-id-tokens">Expected Behavior for Fetching ID Tokens</h3>
+<p>To support fetching ID Tokens, the auth libraries <strong>must</strong> follow the steps
+below:</p>
+<p>1. Accept a target audience parameter when Application Default Credentials
+are requested. If a target audience and scope are both provided to the auth library, an exception <strong>must</strong> be thrown.</p>
+<p>2. Virtual machine credentials return the ID token retrieved from the metadata
+server's <code>instance/service-accounts/default/identity</code> endpoint, setting the
+<code>audience</code> querystring parameter to the provided target audience.</p>
+<p>3. Service account Keys use the <a href="https://tools.ietf.org/html/rfc7523">JWT Bearer</a> grant type, and set the
+<code>target_audience</code> claim to the provided target audience. This will return a JSON
+object containing an <code>id_token</code> key.</p>
+<p>User Identity flows may be used to issue ID tokens, but are not required to.</p>
+<h3 id="expected-behavior-for-verifying-id-tokens">Expected Behavior for Verifying ID Tokens</h3>
+<p>To support verifying ID Tokens, the auth libraries <strong>must</strong> provide a method to
+validate a JWT token which can do the following:</p>
+<p>1. Validate a JWT with an ES256 signature.
+2. Validate JWT <code>aud</code> claim against a user-provided audience.
+3. Validate JWT <code>exp</code> claim against the current timestamp.</p>
+<!-- prettier-ignore-start -->
+<!-- prettier-ignore-end -->
   <footer>
   Except as otherwise noted, the content of this page is licensed under the
   <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
