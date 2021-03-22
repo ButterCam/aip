@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US" class="glue-flexbox">
   <head>
-    <title>AIP-233: Batch methods: Create</title>
+    <title>AIP-211: Authorization checks</title>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
@@ -507,7 +507,7 @@
         Unicode
       </a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item nav-item-active">
       <a href="/211">
         <span class="aip-number">211</span>
         Authorization checks
@@ -549,7 +549,7 @@
         Batch methods: Get
       </a>
     </li>
-    <li class="nav-item nav-item-active">
+    <li class="nav-item">
       <a href="/233">
         <span class="aip-number">233</span>
         Batch methods: Create
@@ -573,22 +573,20 @@
           
 <aside id="aip-sidebar" class="docs-component-sidebar">
   <table id="aip-summary">
-    <tr><th colspan="2">Batch methods: Create</th></tr>
-    <tr><td>Number</td><td>233</td></tr>
-    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/233">aip.bybutter.com/233</a></td></tr>
-    <tr><td>State</td><td>Approved</td></tr>
-    <tr><td>Created</td><td>2019-06-18</td></tr>
-    <tr><td>Updated</td><td>2019-06-18</td></tr>
+    <tr><th colspan="2">Authorization checks</th></tr>
+    <tr><td>Number</td><td>211</td></tr>
+    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/211">aip.bybutter.com/211</a></td></tr>
+    <tr><td>State</td><td>Reviewing</td></tr>
+    <tr><td>Created</td><td>2021-02-24</td></tr>
+    <tr><td>Updated</td><td>2021-02-24</td></tr>
   </table>
 
   <section id="aip-toc" class="docs-component-sidebar-toc">
     <div class="toc"><span class="toctitle">Contents</span><ul>
 <li><a href="#guidance">Guidance</a><ul>
-<li><a href="#request-message">Request message</a></li>
-<li><a href="#response-message">Response message</a></li>
+<li><a href="#multiple-operations">Multiple operations</a></li>
 </ul>
 </li>
-<li><a href="#changelog">Changelog</a></li>
 </ul>
 </div>
 
@@ -597,8 +595,8 @@
   <section class="docs-component-sidebar-actions">
     <ul>
       <li><a href="https://github.com/ButterCam/aip/issues/">File Bug</a></li>
-      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/general/0233.md">View source</a></li>
-      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/general/0233.md">Edit this page</a></li>
+      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/general/0211.md">View source</a></li>
+      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/general/0211.md">Edit this page</a></li>
     </ul>
   </section>
 </aside>
@@ -623,120 +621,62 @@
       
       <li class="glue-breadcrumbs__item glue-breadcrumbs__item--active"
           aria-level="3">
-        Batch methods: Create
+        Authorization checks
       </li>
     </ol>
   </nav>
 </section>
-  
-  <h4 class="aip-number">AIP-233</h4>
-  <h1>Batch methods: Create</h1>
-<p>Some APIs need to allow users to create multiple resources in a single
-transaction. A batch create method provides this functionality.</p>
+  <p id="aip-state-banner" class="callout note">
+  This AIP is currently under review. This means that the editors have read it
+  and are in high-level concurrence, and while it is not yet fully approved, we
+  have a good faith expectation that the AIP will be approved in something
+  close to its current state.
+</p>
+  <h4 class="aip-number">AIP-211</h4>
+  <h1>Authorization checks</h1>
+<p>The majority of operations, whether reads or writes, require authorization:
+permission to do the thing the user is asking to do. Additionally, it is
+important to be careful how much information is provided to <em>unauthorized</em>
+users, since leaking information can be a security concern.</p>
 <h2 id="guidance">Guidance</h2>
-<p>APIs <strong>may</strong> support Batch Create using the following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="k">rpc</span> <span class="n">BatchCreateBooks</span><span class="p">(</span><span class="n">BatchCreateBooksRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">BatchCreateBooksResponse</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">post</span><span class="o">:</span> <span class="s">&quot;/v1/{parent=publishers/*}/books:batchCreate&quot;</span>
-    <span class="n">body</span><span class="o">:</span> <span class="s">&quot;*&quot;</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></div>
+<p>Services <strong>must</strong> check authorization before validating any request, to ensure
+both a secure API surface and a consistent user experience. An operation
+<strong>may</strong> require multiple permissions or preconditions in order to grant
+authorization.</p>
+<p>If a request can not pass the authorization check for any reason, the service
+<strong>must</strong> error with <code>PERMISSION_DENIED</code>, and the corresponding error message
+<strong>should</strong> look like: "Permission <code>{p}</code> denied on resource <code>{r}</code> (or it might
+not exist)." This avoids leaking resource existence.</p>
+<p><strong>Note:</strong> This guidance conflicts with the guidance in the HTTP specification,
+which argues for the use of 404 in cases where the user lacks permission to
+know whether or not a resource exists. This variance is because of real-world
+challenges: the practice of "getting <code>NOT_FOUND</code> until you have enough
+permission to get <code>PERMISSION_DENIED</code>" is counter-intuitive and increases the
+difficulty of troubleshooting. Additionally, the guidance here is more
+consistent with most other real-world authorization systems.</p>
+<p>If it is not possible to determine authorization for a resource because the
+resource does not exist, the service <strong>should</strong> check authorization to read
+children on the parent resource, and return <code>NOT_FOUND</code> if the authorization
+check passes.</p>
+<h3 id="multiple-operations">Multiple operations</h3>
+<p>A service could encounter a situation where it has two different operations
+with two different permissions, either of which would reveal the existence of a
+resource if called, but a user only has permission to call one of them.</p>
+<p>In this situation, the service <strong>should</strong> still only check for authorization
+applicable to the operation being called, and <strong>should not</strong> try to "help out"
+by checking for related authorization that would provide permission to reveal
+existence, because such algorithms are complicated to implement correctly and
+prone to accidental leaks.</p>
+<p>For example, posit a scenario where:</p>
 <ul>
-<li>The RPC's name <strong>must</strong> begin with <code>BatchCreate</code>. The remainder of the RPC
-  name <strong>should</strong> be the plural form of the resource being created.</li>
-<li>The request and response messages <strong>must</strong> match the RPC name, with
-  <code>-Request</code> and <code>-Response</code> suffixes.<ul>
-<li>However, in the event that the request may take a significant amount of
-  time, the response message <strong>must</strong> be a <code>google.longrunning.Operation</code>
-  which ultimately resolves to the <code>-Response</code> type.</li>
+<li>A resource exists within a given collection that a user is unable to read.</li>
+<li>The user <em>does</em> have the ability to create other resources, and the
+  collection uses user-specified IDs (meaning that a failure because of a
+  duplicate ID would reveal existance).</li>
 </ul>
-</li>
-<li>The HTTP verb <strong>must</strong> be <code>POST</code>.</li>
-<li>The HTTP URI <strong>must</strong> end with <code>:batchCreate</code>.</li>
-<li>The URI path <strong>should</strong> represent the collection for the resource, matching
-  the collection used for simple CRUD operations. If the operation spans
-  parents, a dash (<code>-</code>) <strong>may</strong> be accepted as a wildcard.</li>
-<li>The body clause in the <code>google.api.http</code> annotation <strong>should</strong> be <code>"*"</code>.</li>
-<li>The operation <strong>must</strong> be atomic: it <strong>must</strong> fail for all resources or
-  succeed for all resources (no partial success).<ul>
-<li>If the operation covers multiple locations and at least one location is
-  down, the operation <strong>must</strong> fail.</li>
-</ul>
-</li>
-</ul>
-<h3 id="request-message">Request message</h3>
-<p>The request for a batch create method <strong>should</strong> be specified with the
-following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">BatchCreateBooksRequest</span> <span class="p">{</span>
-  <span class="c1">// The parent resource shared by all books being created.</span>
-  <span class="c1">// Format: publishers/{publisher}</span>
-  <span class="c1">// If this is set, the parent field in the CreateBookRequest messages</span>
-  <span class="c1">// must either be empty or match this field.</span>
-  <span class="kt">string</span> <span class="na">parent</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">[</span>
-    <span class="p">(</span><span class="n">google.api.resource_reference</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
-      <span class="n">child_type</span><span class="o">:</span> <span class="s">&quot;library.googleapis.com/Book&quot;</span>
-    <span class="p">}];</span>
-
-  <span class="c1">// The request message specifying the resources to create.</span>
-  <span class="c1">// A maximum of 1000 books can be created in a batch.</span>
-  <span class="k">repeated</span> <span class="n">CreateBookRequest</span> <span class="na">requests</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="p">[(</span><span class="n">google.api.field_behavior</span><span class="p">)</span> <span class="o">=</span> <span class="n">REQUIRED</span><span class="p">];</span>
-<span class="p">}</span>
-</code></pre></div>
-<ul>
-<li>A <code>parent</code> field <strong>should</strong> be included, unless the resource being created is
-  a top-level resource. If a caller sets this field, and the
-  <code>parent</code> field of any child request message does not match, the request
-  <strong>must</strong> fail. The <code>parent</code> field of child request messages can be omitted if
-  the <code>parent</code> field in this request is set.<ul>
-<li>This field <strong>should</strong> be required if only 1 parent per request is allowed.</li>
-<li>The field <strong>should</strong> identify the <a href="/122#fields-representing-a-resources-parent">resource type</a> that it
-  references.</li>
-<li>The comment for the field <strong>should</strong> document the resource pattern.</li>
-</ul>
-</li>
-<li>The request message <strong>must</strong> include a repeated field which accepts the
-  request messages specifying the resources to create, as specified for
-  <a href="/133#request-message">standard Create methods</a>. The field <strong>should</strong> be named
-  <code>requests</code>.<ul>
-<li>The field <strong>should</strong> be required.</li>
-</ul>
-</li>
-<li>Other fields <strong>may</strong> be "hoisted" from the <a href="/133#request-message">standard Create
-  request</a>, which means that the field can be set at either
-  the batch level or child request level. Similar to <code>parent</code>, if both the
-  batch level and child request level are set for the same field, the values
-  <strong>must</strong> match.<ul>
-<li>Fields which must be unique cannot be hoisted (e.g. Customer-provided id
-  fields).</li>
-</ul>
-</li>
-<li>The request message <strong>must not</strong> contain any other required fields, and
-  <strong>should not</strong> contain other optional fields except those described in this
-  or another AIP.</li>
-<li>The comment above the <code>requests</code> field <strong>should</strong> document the maximum number
-  of requests allowed.</li>
-</ul>
-<h3 id="response-message">Response message</h3>
-<p>The response for a batch create method <strong>should</strong> be specified with the
-following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">BatchCreateBooksResponse</span> <span class="p">{</span>
-  <span class="c1">// Books created.</span>
-  <span class="k">repeated</span> <span class="n">Book</span> <span class="na">books</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div>
-<ul>
-<li>The response message <strong>must</strong> include one repeated field corresponding to the
-  resources that were created.</li>
-</ul>
-<h2 id="changelog">Changelog</h2>
-<ul>
-<li><strong>2020-09-16</strong>: Suggested annotating <code>parent</code> and <code>requests</code> fields.</li>
-<li><strong>2020-08-27</strong>: Removed parent recommendations for top-level resources.</li>
-<li><strong>2019-08-01</strong>: Changed the examples from "shelves" to "publishers", to
-  present a better example of resource ownership.</li>
-</ul>
+<p>In this situation, the get or create methods <strong>should</strong> still only check
+<em>their</em> permissions when determining what error to return, and not one
+another's.</p>
   <footer>
   Except as otherwise noted, the content of this page is licensed under the
   <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons

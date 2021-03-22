@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US" class="glue-flexbox">
   <head>
-    <title>AIP-233: Batch methods: Create</title>
+    <title>AIP-161: Field masks</title>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
@@ -417,7 +417,7 @@
         Filtering
       </a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item nav-item-active">
       <a href="/161">
         <span class="aip-number">161</span>
         Field masks
@@ -549,7 +549,7 @@
         Batch methods: Get
       </a>
     </li>
-    <li class="nav-item nav-item-active">
+    <li class="nav-item">
       <a href="/233">
         <span class="aip-number">233</span>
         Batch methods: Create
@@ -573,22 +573,25 @@
           
 <aside id="aip-sidebar" class="docs-component-sidebar">
   <table id="aip-summary">
-    <tr><th colspan="2">Batch methods: Create</th></tr>
-    <tr><td>Number</td><td>233</td></tr>
-    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/233">aip.bybutter.com/233</a></td></tr>
-    <tr><td>State</td><td>Approved</td></tr>
-    <tr><td>Created</td><td>2019-06-18</td></tr>
-    <tr><td>Updated</td><td>2019-06-18</td></tr>
+    <tr><th colspan="2">Field masks</th></tr>
+    <tr><td>Number</td><td>161</td></tr>
+    <tr><td>Permalink</td><td><a href="https://aip.bybutter.com/161">aip.bybutter.com/161</a></td></tr>
+    <tr><td>State</td><td>Reviewing</td></tr>
+    <tr><td>Created</td><td>2021-03-01</td></tr>
+    <tr><td>Updated</td><td>2021-03-01</td></tr>
   </table>
 
   <section id="aip-toc" class="docs-component-sidebar-toc">
     <div class="toc"><span class="toctitle">Contents</span><ul>
 <li><a href="#guidance">Guidance</a><ul>
-<li><a href="#request-message">Request message</a></li>
-<li><a href="#response-message">Response message</a></li>
+<li><a href="#read-write-consistency">Read-write consistency</a></li>
+<li><a href="#specifying-specific-fields">Specifying specific fields</a></li>
+<li><a href="#map-fields">Map fields</a></li>
+<li><a href="#wildcards">Wildcards</a></li>
+<li><a href="#output-only-fields">Output only fields</a></li>
+<li><a href="#invalid-field-mask-entries">Invalid field mask entries</a></li>
 </ul>
 </li>
-<li><a href="#changelog">Changelog</a></li>
 </ul>
 </div>
 
@@ -597,8 +600,8 @@
   <section class="docs-component-sidebar-actions">
     <ul>
       <li><a href="https://github.com/ButterCam/aip/issues/">File Bug</a></li>
-      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/general/0233.md">View source</a></li>
-      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/general/0233.md">Edit this page</a></li>
+      <li><a href="https://github.com/ButterCam/aip/blob/master/aip/general/0161.md">View source</a></li>
+      <li><a href="https://github.com/ButterCam/aip/edit/master/aip/general/0161.md">Edit this page</a></li>
     </ul>
   </section>
 </aside>
@@ -623,120 +626,127 @@
       
       <li class="glue-breadcrumbs__item glue-breadcrumbs__item--active"
           aria-level="3">
-        Batch methods: Create
+        Field masks
       </li>
     </ol>
   </nav>
 </section>
-  
-  <h4 class="aip-number">AIP-233</h4>
-  <h1>Batch methods: Create</h1>
-<p>Some APIs need to allow users to create multiple resources in a single
-transaction. A batch create method provides this functionality.</p>
+  <p id="aip-state-banner" class="callout note">
+  This AIP is currently under review. This means that the editors have read it
+  and are in high-level concurrence, and while it is not yet fully approved, we
+  have a good faith expectation that the AIP will be approved in something
+  close to its current state.
+</p>
+  <h4 class="aip-number">AIP-161</h4>
+  <h1>Field masks</h1>
+<p>Often, when updating resources (using an update method as defined in <a href="/134">AIP-134</a> or
+something reasonably similar), it is desirable to specify exactly which fields
+are being updated, so that the service can ignore the rest, even if the user
+sends new values.</p>
+<p>It is tempting to define a mask format to handle the precise needs for each
+API. However, masking requirements evolve, and therefore it is prudent to use a
+structured syntax. This allows updates to be able to be made transparently,
+without waiting for UI or client updates.</p>
 <h2 id="guidance">Guidance</h2>
-<p>APIs <strong>may</strong> support Batch Create using the following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="k">rpc</span> <span class="n">BatchCreateBooks</span><span class="p">(</span><span class="n">BatchCreateBooksRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">BatchCreateBooksResponse</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">post</span><span class="o">:</span> <span class="s">&quot;/v1/{parent=publishers/*}/books:batchCreate&quot;</span>
-    <span class="n">body</span><span class="o">:</span> <span class="s">&quot;*&quot;</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></div>
-<ul>
-<li>The RPC's name <strong>must</strong> begin with <code>BatchCreate</code>. The remainder of the RPC
-  name <strong>should</strong> be the plural form of the resource being created.</li>
-<li>The request and response messages <strong>must</strong> match the RPC name, with
-  <code>-Request</code> and <code>-Response</code> suffixes.<ul>
-<li>However, in the event that the request may take a significant amount of
-  time, the response message <strong>must</strong> be a <code>google.longrunning.Operation</code>
-  which ultimately resolves to the <code>-Response</code> type.</li>
-</ul>
-</li>
-<li>The HTTP verb <strong>must</strong> be <code>POST</code>.</li>
-<li>The HTTP URI <strong>must</strong> end with <code>:batchCreate</code>.</li>
-<li>The URI path <strong>should</strong> represent the collection for the resource, matching
-  the collection used for simple CRUD operations. If the operation spans
-  parents, a dash (<code>-</code>) <strong>may</strong> be accepted as a wildcard.</li>
-<li>The body clause in the <code>google.api.http</code> annotation <strong>should</strong> be <code>"*"</code>.</li>
-<li>The operation <strong>must</strong> be atomic: it <strong>must</strong> fail for all resources or
-  succeed for all resources (no partial success).<ul>
-<li>If the operation covers multiple locations and at least one location is
-  down, the operation <strong>must</strong> fail.</li>
-</ul>
-</li>
-</ul>
-<h3 id="request-message">Request message</h3>
-<p>The request for a batch create method <strong>should</strong> be specified with the
-following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">BatchCreateBooksRequest</span> <span class="p">{</span>
-  <span class="c1">// The parent resource shared by all books being created.</span>
-  <span class="c1">// Format: publishers/{publisher}</span>
-  <span class="c1">// If this is set, the parent field in the CreateBookRequest messages</span>
-  <span class="c1">// must either be empty or match this field.</span>
-  <span class="kt">string</span> <span class="na">parent</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">[</span>
-    <span class="p">(</span><span class="n">google.api.resource_reference</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
-      <span class="n">child_type</span><span class="o">:</span> <span class="s">&quot;library.googleapis.com/Book&quot;</span>
-    <span class="p">}];</span>
+<p>Update methods (<a href="/134">AIP-134</a>) <strong>must</strong> include an <code>update_mask</code> field, and Get and
+List methods <strong>may</strong> include a <code>read_mask</code> field. These are collectively called
+"field masks", and they use the <code>google.protobuf.FieldMask</code> type.</p>
+<p>Field masks <strong>must</strong> always be relative to the resource:</p>
+<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">UpdateBookRequest</span> <span class="p">{</span>
+  <span class="c1">// The book to update.</span>
+  <span class="c1">//</span>
+  <span class="c1">// The book&#39;s `name` field is used to identify the book to be updated.</span>
+  <span class="c1">// Format: publishers/{publisher}/books/{book}</span>
+  <span class="n">Book</span> <span class="na">book</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">[(</span><span class="n">google.api.field_behavior</span><span class="p">)</span> <span class="o">=</span> <span class="n">REQUIRED</span><span class="p">];</span>
 
-  <span class="c1">// The request message specifying the resources to create.</span>
-  <span class="c1">// A maximum of 1000 books can be created in a batch.</span>
-  <span class="k">repeated</span> <span class="n">CreateBookRequest</span> <span class="na">requests</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="p">[(</span><span class="n">google.api.field_behavior</span><span class="p">)</span> <span class="o">=</span> <span class="n">REQUIRED</span><span class="p">];</span>
+  <span class="c1">// The list of fields to be updated.</span>
+  <span class="c1">// Fields are specified relative to the book</span>
+  <span class="c1">// (e.g. `title`, `rating`; *not* `book.title` or `book.rating`).</span>
+  <span class="n">google.protobuf.FieldMask</span> <span class="na">update_mask</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
+<h3 id="read-write-consistency">Read-write consistency</h3>
+<p>Read and write behavior for field masks <strong>must</strong> be self-consistent if a mask
+is present:</p>
 <ul>
-<li>A <code>parent</code> field <strong>should</strong> be included, unless the resource being created is
-  a top-level resource. If a caller sets this field, and the
-  <code>parent</code> field of any child request message does not match, the request
-  <strong>must</strong> fail. The <code>parent</code> field of child request messages can be omitted if
-  the <code>parent</code> field in this request is set.<ul>
-<li>This field <strong>should</strong> be required if only 1 parent per request is allowed.</li>
-<li>The field <strong>should</strong> identify the <a href="/122#fields-representing-a-resources-parent">resource type</a> that it
-  references.</li>
-<li>The comment for the field <strong>should</strong> document the resource pattern.</li>
+<li>If a user updates a resource with a given mask, and then reads the same
+  resource with the same mask, the exact same data <strong>must</strong> be returned.<ul>
+<li>Exception: <a href="#output-only-fields">Output only fields</a>.</li>
 </ul>
 </li>
-<li>The request message <strong>must</strong> include a repeated field which accepts the
-  request messages specifying the resources to create, as specified for
-  <a href="/133#request-message">standard Create methods</a>. The field <strong>should</strong> be named
-  <code>requests</code>.<ul>
-<li>The field <strong>should</strong> be required.</li>
+<li>Similarly, reading a resource with a given mask and then updating the
+  resource with the returned data and the same mask <strong>must</strong> be a no-op.</li>
 </ul>
-</li>
-<li>Other fields <strong>may</strong> be "hoisted" from the <a href="/133#request-message">standard Create
-  request</a>, which means that the field can be set at either
-  the batch level or child request level. Similar to <code>parent</code>, if both the
-  batch level and child request level are set for the same field, the values
-  <strong>must</strong> match.<ul>
-<li>Fields which must be unique cannot be hoisted (e.g. Customer-provided id
-  fields).</li>
-</ul>
-</li>
-<li>The request message <strong>must not</strong> contain any other required fields, and
-  <strong>should not</strong> contain other optional fields except those described in this
-  or another AIP.</li>
-<li>The comment above the <code>requests</code> field <strong>should</strong> document the maximum number
-  of requests allowed.</li>
-</ul>
-<h3 id="response-message">Response message</h3>
-<p>The response for a batch create method <strong>should</strong> be specified with the
-following pattern:</p>
-<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">BatchCreateBooksResponse</span> <span class="p">{</span>
-  <span class="c1">// Books created.</span>
-  <span class="k">repeated</span> <span class="n">Book</span> <span class="na">books</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<p><strong>Note:</strong> This implies that any mask that is valid for either read or write
+<strong>must</strong> be valid for both.</p>
+<h3 id="specifying-specific-fields">Specifying specific fields</h3>
+<p>Field masks <strong>must</strong> permit the specification of specific fields in a defined
+struct, using the <code>.</code> character for traversal.</p>
+<p>Because field masks are always relative to the resource, direct fields on the
+resource require no traversal (examples: <code>title</code>, <code>rating</code>). Traversal is used
+when resources contain messages (example: <code>author.given_name</code>).</p>
+<p><strong>Note:</strong> A user <strong>must</strong> be able to specify either a field as a whole, or one
+of its subfields: <code>author</code> and <code>author.given_name</code> are both valid.</p>
+<h3 id="map-fields">Map fields</h3>
+<p>Field masks <strong>may</strong> permit the specification of specific fields in a map, if
+and only if the map's keys are either strings or integers, using the <code>.</code>
+character for traversal.</p>
+<p>Field masks <strong>should</strong> support string keys that contain characters that are
+problematic for the field mask syntax, using the backtick character.</p>
+<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">Book</span> <span class="p">{</span>
+  <span class="c1">// The name of the book.</span>
+  <span class="c1">// Format: publishers/{publisher}/books/{book}</span>
+  <span class="kt">string</span> <span class="na">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="c1">// Reviews for the back cover. The key is the author of the review,</span>
+  <span class="c1">// and the value is the text of the review.</span>
+  <span class="c1">//</span>
+  <span class="c1">// Valid field masks: reviews, reviews.smith, reviews.`John Smith`</span>
+  <span class="n">map</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;</span> <span class="na">reviews</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<ul>
-<li>The response message <strong>must</strong> include one repeated field corresponding to the
-  resources that were created.</li>
-</ul>
-<h2 id="changelog">Changelog</h2>
-<ul>
-<li><strong>2020-09-16</strong>: Suggested annotating <code>parent</code> and <code>requests</code> fields.</li>
-<li><strong>2020-08-27</strong>: Removed parent recommendations for top-level resources.</li>
-<li><strong>2019-08-01</strong>: Changed the examples from "shelves" to "publishers", to
-  present a better example of resource ownership.</li>
-</ul>
+<h3 id="wildcards">Wildcards</h3>
+<p>Field masks <strong>may</strong> permit the use of the <code>*</code> character on a repeated field or
+map to indicate the specification of particular sub-fields in the collection:</p>
+<div class="highlight language-proto"><pre><span></span><code><span class="kd">message</span> <span class="nc">Book</span> <span class="p">{</span>
+  <span class="c1">// The name of the book.</span>
+  <span class="c1">// Format: publishers/{publisher}/books/{book}</span>
+  <span class="kt">string</span> <span class="na">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="c1">// The author or authors of the book.</span>
+  <span class="c1">// Valid field masks: authors, authors.*.given_name, authors.*.family_name</span>
+  <span class="c1">// Invalid field masks: authors.0, authors.0.given_name</span>
+  <span class="k">repeated</span> <span class="n">Author</span> <span class="na">authors</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">message</span> <span class="nc">Author</span> <span class="p">{</span>
+  <span class="c1">// The author&#39;s given name.</span>
+  <span class="kt">string</span> <span class="na">given_name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="c1">// The author&#39;s family name.</span>
+  <span class="kt">string</span> <span class="na">family_name</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Note:</strong> Field masks <strong>must not</strong> permit accessing a particular element of a
+repeated field by index, and <strong>must</strong> return an <code>INVALID_ARGUMENT</code> error if
+this is attempted.</p>
+<h3 id="output-only-fields">Output only fields</h3>
+<p>If a user includes an output only field in an update mask indirectly (by using
+a wildcard or specifying an overall message that includes an output-only
+subfield), the service <strong>must</strong> ignore any output only fields provided as
+input, even if they are cleared or modified.</p>
+<p>If a user directly specifies an output only field in an update mask, the
+service <strong>should</strong> ignore the output only fields provided as input, even if
+they are cleared or modified, to permit the same field mask to be used for
+input and output. However, the service <strong>may</strong> choose to error with
+<code>INVALID_ARGUMENT</code> if the field is modified in input.</p>
+<h3 id="invalid-field-mask-entries">Invalid field mask entries</h3>
+<p>When reading data, field masks <strong>should</strong> ignore entries that point to a value
+that can not exist (either a field that does not exist, or a map key that the
+service considers invalid).</p>
+<p>When writing data, field masks <strong>should</strong> return an <code>INVALID_ARGUMENT</code> error if
+an entry points to a value that can not exist; however, the service <strong>may</strong>
+permit deletions.</p>
   <footer>
   Except as otherwise noted, the content of this page is licensed under the
   <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
